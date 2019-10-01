@@ -16,6 +16,7 @@ restart.addEventListener('click',restartfunc);
 // Shuffle function from http://stackoverflow.com/a/2450976
 function restartfunc(){
     move=0;
+    totalOpen=0;
     if(move%2==0)
     document.querySelector('.moves').textContent=String(move/2);
     card=shuffle(card);
@@ -28,7 +29,7 @@ function restartfunc(){
             {
                 move++;
                 if(move%2==0)
-                document.querySelector('.moves').textContent=String(move/2);
+                    document.querySelector('.moves').textContent=String(move/2);
                 temp.classList.add("open");
                 temp.classList.add("show");
                 if((move%2)==1)
@@ -45,8 +46,19 @@ function restartfunc(){
                         totalOpen++;
                         if(totalOpen==16)
                         {
-                            alert("You won using "+String(move)+" moves!");
-                            return;
+                            var modal1 = document.getElementById("myModal");
+                            var span1 = document.getElementsByClassName("close")[0];
+                            var modalcontent = document.getElementsByClassName("modal-content")[0];
+                            modal1.style.display = "block";
+                            modalcontent.childNodes[0].textContent="You took "+String(move/2)+" moves to finish!";
+                            span1.onclick = function() {
+                            modal1.style.display = "none";
+                            }
+                            window.onclick = function(event) {
+                            if (event.target == modal1) {
+                                modal1.style.display = "none";
+                            }
+                            }
                         }
                     }
                     else
