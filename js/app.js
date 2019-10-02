@@ -1,59 +1,96 @@
 /*
  * Create a list that holds all of your cards
  */
-var card=document.getElementsByClassName("card");
-restartfunc();
-/*
- * Display the cards on the page
- *   - shuffle the list of cards using the provided "shuffle" method below
- *   - loop through each card and create its HTML
- *   - add each card's HTML to the page
- */
-var mins=0,secs=0;
-function countdown() { 
-    setTimeout('Increment()', 60); 
-} 
-function getminutes() { 
-    mins = Math.floor(secs / 60); 
-    return mins; 
-} 
-function getseconds() { 
-    return secs - Math.round(mins * 60); 
-} 
-function Increment() { 
-    if (document.getElementById) { 
-        minutes = document.getElementById("minutes"); 
-        seconds = document.getElementById("seconds"); 
-        if (seconds < 59) { 
-            seconds.value = secs; 
-        }
-        else { 
-            minutes.value = getminutes(); 
-            seconds.value = getseconds(); 
-        } 
-        secs++; 
-		setTimeout('Increment()', 1000);
-    }
-}
+let ulRating = document.querySelector('.stars');
+let rating = 3.0;
+const tiles = {
+    "ANCHOR": "fa-anchor",
+    "BICYCLE": "fa-motorcycle",
+    "BOLT": "fa-bolt",
+    "BOMB": "fa-bomb",
+    "CUBE": "fa-cube",
+    "DIAMOND": "fa-diamond",
+    "LEAF": "fa-leaf",
+    "PAPER_PLANE": "fa-paper-plane"
+};
 var move=0,totalOpen=0;
+let cards=new Array(16);
 var lastOpen;
 let restart=document.querySelector('.restart');
 restart.addEventListener('click',restartfunc);
-// Shuffle function from http://stackoverflow.com/a/2450976
+restartfunc();
+var starttime;
+function shuffle(array) {
+    var currentIndex = 16, temporaryValue, randomIndex;
+    while (currentIndex !== 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+    for(let i=0;i<16;i++)
+    {
+        cards[i]=document.createElement('li');
+        cards[i].className="card";
+        cards[i].innerHTML="<i class=\"fa "+array[i]+"\"></i>";
+    }
+}
+var x,minutes=0,seconds=0;
 function restartfunc(){
+    rating = 3.0;
+    document.getElementById("demo").innerHTML = "0m 0s";
+    starttime=new Date().getTime();
+    clearInterval(x);
+    //console.log(ulRating.childNodes);
+    ulRating.children.item(0).className = "fa fa-star";
+    ulRating.children.item(1).className = "fa fa-star";
+    ulRating.children.item(2).className = "fa fa-star";
+    var tilecards= new Array(16);
+    var i=0;
+    for(tile in tiles){
+        tilecards[i]=tiles[tile];
+        tilecards[i+1]=tiles[tile];
+        i+=2;
+    }
     move=0;
     totalOpen=0;
     if(move%2==0)
     document.querySelector('.moves').textContent=String(move/2);
-    card=shuffle(card);
-    let deck=document.getElementsByClassName("deck")[0];
+    shuffle(tilecards);
+    let deck=document.getElementsByClassName("deck")[0]; 
+    var child = deck.lastElementChild;  
+    while (child) { 
+        deck.removeChild(child); 
+        child = deck.lastElementChild; 
+    } 
     for(var i=0;i<16;i++){
-        deck.appendChild(card[i]);
+        deck.appendChild(cards[i]);
+    }
+    if(deck.childNodes.length==17)
+        deck.removeChild(deck.firstChild);
+    card=deck.childNodes;
+    console.log(card);
+    for(var i=0;i<16;i++){
+        console.log(card[i]);
         let temp=card[i];
         temp.addEventListener('click',function(){
             if(!(temp.classList.contains("match") || temp.classList.contains("open")))
             {
                 move++;
+                if(move==1)
+                {
+                    starttime=new Date().getTime();
+                      x = setInterval(function() {
+                      var now = new Date().getTime();
+                      var distance =now - starttime;
+                      minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                      seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                        
+                      // Output the result in an element with id="demo"
+                      document.getElementById("demo").innerHTML = minutes + "m " + seconds + "s ";
+                  }, 1000);
+                }
                 if(move%2==0)
                     document.querySelector('.moves').textContent=String(move/2);
                 temp.classList.add("open");
@@ -62,31 +99,30 @@ function restartfunc(){
                 {
                     lastOpen=temp;
                     totalOpen++;
-                    if(totalOpen==1)
-                        countdown();
                 }
                 else
                 {
                     setTimeout(function(){
-                    if(temp.childNodes[1].className==lastOpen.childNodes[1].className)
+                    if(temp.childNodes[0].className==lastOpen.childNodes[0].className)
                     {
                         temp.className = "card match";
                         lastOpen.className = "card match";
                         totalOpen++;
                         if(totalOpen==16)
                         {
+                            clearInterval(x);
                             var modal1 = document.getElementById("myModal");
                             var span1 = document.getElementsByClassName("close")[0];
                             var modalcontent = document.getElementsByClassName("modal-content")[0];
                             modal1.style.display = "block";
-                            modalcontent.childNodes[0].textContent="You took "+String(move/2)+" moves to finish!";
+                            modalcontent.childNodes[0].textContent="You took "+String(move/2)+" moves to finish in "+minutes+" m "+seconds+" s "+"! \n Your rating is "+String(rating)+" Stars.";
                             span1.onclick = function() {
                             modal1.style.display = "none";
                             }
                             window.onclick = function(event) {
-                            if (event.target == modal1) {
-                                modal1.style.display = "none";
-                            }
+                                if (event.target == modal1) {
+                                    modal1.style.display = "none";
+                                }
                             }
                         }
                     }
@@ -96,32 +132,45 @@ function restartfunc(){
                             lastOpen.className = "card";
                             totalOpen--;
                         
-                    }},500);
+                    }},250);
                 }
             }
+                if((move/2)>38){
+                    rating = 0.5;
+                    ulRating.children.item(0).className = "fa fa-star-half-o";
+                    ulRating.children.item(1).className = "";
+                    ulRating.children.item(2).className = "";
+                } else if ((move/2) > 30) {
+                    //If moves is greater than 30, set rating to 1 and update UI
+                    rating = 1.0;
+                    ulRating.children.item(0).className = "fa fa-star";
+                    ulRating.children.item(1).className = "";
+                    ulRating.children.item(2).className = "";
+                } else if ((move/2) > 24) {
+                    //If moves is greater than 24, set rating to 1.5 and update UI
+                    rating = 1.5;
+                    ulRating.children.item(0).className = "fa fa-star";
+                    ulRating.children.item(1).className = "fa fa-star-half-o";
+                    ulRating.children.item(2).className = "";
+                } else if ((move/2) > 20) {
+                    //If moves is greater than 20, set rating to 2 and update UI
+                    rating = 2.0;
+                    ulRating.children.item(0).className = "fa fa-star";
+                    ulRating.children.item(1).className = "fa fa-star";
+                    ulRating.children.item(2).className = "";
+                } else if ((move/2) > 16) {
+                    //If moves is greater than 16, set rating to 2.5 and update UI
+                    rating = 2.5;
+                    ulRating.children.item(0).className = "fa fa-star";
+                    ulRating.children.item(1).className = "fa fa-star";
+                    ulRating.children.item(2).className = "fa fa-star-half-o";
+                } else {
+                    //If moves is less than or equal to 16, set rating to 3 and update UI
+                    rating = 3.0;
+                    ulRating.children.item(0).className = "fa fa-star";
+                    ulRating.children.item(1).className = "fa fa-star";
+                    ulRating.children.item(2).className = "fa fa-star";
+                }
         });
     }
 }
-function shuffle(array) {
-    var currentIndex = 16, temporaryValue, randomIndex;
-    while (currentIndex !== 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex -= 1;
-        array[currentIndex].className = "card";
-        temporaryValue = array[currentIndex];
-        array[currentIndex] = array[randomIndex];
-        array[randomIndex] = temporaryValue;
-    }
-
-    return array;
-}
-/*
- * set up the event listener for a card. If a card is clicked:
- *  - display the card's symbol (put this functionality in another function that you call from this one)
- *  - add the card to a *list* of "open" cards (put this functionality in another function that you call from this one)
- *  - if the list already has another card, check to see if the two cards match
- *    + if the cards do match, lock the cards in the open position (put this functionality in another function that you call from this one)
- *    + if the cards do not match, remove the cards from the list and hide the card's symbol (put this functionality in another function that you call from this one)
- *    + increment the move counter and display it on the page (put this functionality in another function that you call from this one)
- *    + if all cards have matched, display a message with the final score (put this functionality in another function that you call from this one)
- */
