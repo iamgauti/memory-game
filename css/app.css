@@ -63,6 +63,11 @@ h1 {
     justify-content: center;
     align-items: center;
     box-shadow: 5px 2px 20px 0 rgba(46, 61, 73, 0.5);
+    transition: all 500ms;
+    transition-property: all;
+    transition-duration: 500ms;
+    transition-timing-function: ease;
+    transition-delay: 0s;
 }
 
 .deck .card.open {

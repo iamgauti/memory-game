@@ -9,6 +9,32 @@ restartfunc();
  *   - loop through each card and create its HTML
  *   - add each card's HTML to the page
  */
+var mins=0,secs=0;
+function countdown() { 
+    setTimeout('Increment()', 60); 
+} 
+function getminutes() { 
+    mins = Math.floor(secs / 60); 
+    return mins; 
+} 
+function getseconds() { 
+    return secs - Math.round(mins * 60); 
+} 
+function Increment() { 
+    if (document.getElementById) { 
+        minutes = document.getElementById("minutes"); 
+        seconds = document.getElementById("seconds"); 
+        if (seconds < 59) { 
+            seconds.value = secs; 
+        }
+        else { 
+            minutes.value = getminutes(); 
+            seconds.value = getseconds(); 
+        } 
+        secs++; 
+		setTimeout('Increment()', 1000);
+    }
+}
 var move=0,totalOpen=0;
 var lastOpen;
 let restart=document.querySelector('.restart');
@@ -36,9 +62,12 @@ function restartfunc(){
                 {
                     lastOpen=temp;
                     totalOpen++;
+                    if(totalOpen==1)
+                        countdown();
                 }
                 else
                 {
+                    setTimeout(function(){
                     if(temp.childNodes[1].className==lastOpen.childNodes[1].className)
                     {
                         temp.className = "card match";
@@ -63,12 +92,11 @@ function restartfunc(){
                     }
                     else
                     {
-                        setTimeout(function(){
                             temp.className = "card";
                             lastOpen.className = "card";
                             totalOpen--;
-                        },500);
-                    }
+                        
+                    }},500);
                 }
             }
         });
